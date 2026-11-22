@@ -1,0 +1,2045 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "reportgen/report.schema.json",
+  "title": "canonical.json (규격서 v0.3 3장)",
+  "description": "intake·build가 만드는 정규 데이터. 레드팀(결과 보고서)과 블루팀 데이터를 한 파일에 담되, 블루팀 부분은 없어도 됨(분리 작성). 필수 여부 중 조건부(◐)는 validate/rules.py가 검사함",
+  "type": "object",
+  "required": [
+    "project",
+    "assets"
+  ],
+  "additionalProperties": false,
+  "properties": {
+    "project": {
+      "$ref": "#/$defs/project"
+    },
+    "assets": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/asset"
+      }
+    },
+    "objectives": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/objective"
+      }
+    },
+    "check_items": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/check_item"
+      }
+    },
+    "findings": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/finding"
+      }
+    },
+    "instances": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/finding_instance"
+      }
+    },
+    "scenarios": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/scenario"
+      }
+    },
+    "evidence": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/evidence"
+      }
+    },
+    "patches": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/patch"
+      }
+    },
+    "retests": {
+      "type": "array",
+      "items": {
+        "$ref": "#/$defs/retest"
+      }
+    },
+    "blue": {
+      "$ref": "#/$defs/blue"
+    },
+    "timeline": {
+      "type": "array",
+      "description": "계산: 부록 E 타임라인"
+    }
+  },
+  "$defs": {
+    "asset_id": {
+      "type": "string",
+      "pattern": "^A-\\d{2}$"
+    },
+    "objective_id": {
+      "type": "string",
+      "pattern": "^O-\\d+$"
+    },
+    "owasp_2025": {
+      "enum": [
+        "A01",
+        "A02",
+        "A03",
+        "A04",
+        "A05",
+        "A06",
+        "A07",
+        "A08",
+        "A09",
+        "A10"
+      ]
+    },
+    "finding_id": {
+      "type": "string",
+      "pattern": "^V-\\d{2}$"
+    },
+    "instance_id": {
+      "type": "string",
+      "pattern": "^V-\\d{2}-\\d+$"
+    },
+    "scenario_id": {
+      "type": "string",
+      "pattern": "^S\\d+$"
+    },
+    "step_id": {
+      "type": "string",
+      "pattern": "^S\\d+-STEP\\d+$"
+    },
+    "test_id": {
+      "type": "string",
+      "pattern": "^D-\\d{2}$"
+    },
+    "fix_id": {
+      "type": "string",
+      "pattern": "^F-\\d{2}$"
+    },
+    "patch_id": {
+      "type": "string",
+      "pattern": "^P-\\d{2}$"
+    },
+    "evidence_id": {
+      "type": "string",
+      "pattern": "^E-\\d{3}$"
+    },
+    "cwe": {
+      "type": "string",
+      "pattern": "^CWE-\\d+$"
+    },
+    "cve": {
+      "type": "string",
+      "pattern": "^CVE-\\d{4}-\\d{4,}$"
+    },
+    "datetime": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}T\\d{2}:\\d{2}:\\d{2}\\+09:00$"
+    },
+    "date": {
+      "type": "string",
+      "pattern": "^\\d{4}-\\d{2}-\\d{2}$"
+    },
+    "ip": {
+      "type": "string"
+    },
+    "text": {
+      "type": "string"
+    },
+    "severity": {
+      "enum": [
+        "critical",
+        "high",
+        "medium",
+        "low",
+        "info"
+      ]
+    },
+    "zone": {
+      "enum": [
+        "external_dmz",
+        "internal_admin"
+      ]
+    },
+    "check_result": {
+      "enum": [
+        "good",
+        "vulnerable",
+        "na"
+      ]
+    },
+    "finding_status": {
+      "enum": [
+        "open",
+        "fixed",
+        "partial",
+        "verified"
+      ]
+    },
+    "discovery": {
+      "enum": [
+        "auto",
+        "manual"
+      ]
+    },
+    "fix_priority": {
+      "enum": [
+        "immediate",
+        "short",
+        "mid"
+      ]
+    },
+    "classification": {
+      "enum": [
+        "confirmed",
+        "needs_check"
+      ]
+    },
+    "asset_scope": {
+      "enum": [
+        "in_scope",
+        "out_of_scope"
+      ]
+    },
+    "patch_type": {
+      "enum": [
+        "code",
+        "config",
+        "removal",
+        "temporary"
+      ]
+    },
+    "patch_scope": {
+      "enum": [
+        "instance",
+        "finding"
+      ]
+    },
+    "outcome": {
+      "enum": [
+        "blocked",
+        "detected",
+        "not_detected",
+        "invalid"
+      ]
+    },
+    "gap": {
+      "enum": [
+        "visibility",
+        "detection_logic",
+        "alert_suppression",
+        "process",
+        "timeliness",
+        "invalid",
+        "none"
+      ]
+    },
+    "ptef_score": {
+      "type": "integer",
+      "minimum": 0,
+      "maximum": 5
+    },
+    "period": {
+      "type": "object",
+      "required": [
+        "start",
+        "end"
+      ],
+      "properties": {
+        "start": {
+          "type": "string"
+        },
+        "end": {
+          "type": "string"
+        }
+      }
+    },
+    "ids": {
+      "type": "array",
+      "items": {
+        "type": "string"
+      }
+    },
+    "project": {
+      "type": "object",
+      "required": [
+        "name",
+        "report_type",
+        "version",
+        "period",
+        "authors"
+      ],
+      "properties": {
+        "name": {
+          "type": "string"
+        },
+        "report_type": {
+          "enum": [
+            "plan",
+            "diag",
+            "pentest",
+            "blue"
+          ]
+        },
+        "version": {
+          "enum": [
+            "0.5",
+            "1.0",
+            "1.1"
+          ]
+        },
+        "period": {
+          "$ref": "#/$defs/period"
+        },
+        "pentest_period": {
+          "$ref": "#/$defs/period"
+        },
+        "authors": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "name",
+              "role"
+            ],
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "role": {
+                "type": "string"
+              },
+              "chapters": {
+                "type": "string"
+              },
+              "contact": {
+                "type": "string"
+              },
+              "area": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "reviewers": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "revisions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "version",
+              "date",
+              "author",
+              "changes"
+            ],
+            "properties": {
+              "version": {
+                "type": "string"
+              },
+              "date": {
+                "type": "string"
+              },
+              "author": {
+                "type": "string"
+              },
+              "changes": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "standards": {
+          "type": "object",
+          "properties": {
+            "owasp": {
+              "type": "string"
+            },
+            "cvss": {
+              "type": "string"
+            }
+          }
+        },
+        "purpose": {
+          "$ref": "#/$defs/text"
+        },
+        "summary_memo": {
+          "$ref": "#/$defs/text"
+        },
+        "tools": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "test_accounts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "name": {
+                "type": "string"
+              },
+              "role": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "conditions": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "phase",
+              "source_ip",
+              "ip_allowed",
+              "active_response",
+              "start_condition"
+            ],
+            "properties": {
+              "phase": {
+                "type": "string"
+              },
+              "source_ip": {
+                "$ref": "#/$defs/ip"
+              },
+              "ip_allowed": {
+                "type": "boolean"
+              },
+              "active_response": {
+                "type": "boolean"
+              },
+              "start_condition": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "good_practices": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "item",
+              "effect",
+              "cited_ids"
+            ],
+            "properties": {
+              "item": {
+                "type": "string"
+              },
+              "effect": {
+                "type": "string"
+              },
+              "cited_ids": {
+                "$ref": "#/$defs/ids"
+              }
+            }
+          }
+        },
+        "schedule": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "phase": {
+                "type": "string"
+              },
+              "period": {
+                "type": "string"
+              },
+              "content": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "title": {
+          "type": "string",
+          "description": "문서 제목(P1 페이지 제목)"
+        },
+        "security_level": {
+          "type": "string",
+          "description": "보안 등급"
+        },
+        "diag_period_text": {
+          "type": "string",
+          "description": "진단 기간(표시용)"
+        },
+        "pentest_period_text": {
+          "type": "string",
+          "description": "모의해킹 기간(표시용)"
+        },
+        "plan_sections": {
+          "type": "object",
+          "description": "수행 계획서 전용. P1 본문의 장 제목 → Markdown(사람이 쓴 그대로)",
+          "additionalProperties": {
+            "type": "string"
+          }
+        }
+      }
+    },
+    "asset": {
+      "type": "object",
+      "required": [
+        "asset_id",
+        "name",
+        "zone",
+        "role",
+        "access_control",
+        "scope"
+      ],
+      "properties": {
+        "asset_id": {
+          "$ref": "#/$defs/asset_id"
+        },
+        "name": {
+          "type": "string"
+        },
+        "host": {
+          "type": "string"
+        },
+        "ip": {
+          "type": "object",
+          "properties": {
+            "public": {
+              "type": "string"
+            },
+            "private": {
+              "type": "string"
+            }
+          }
+        },
+        "zone": {
+          "$ref": "#/$defs/zone"
+        },
+        "role": {
+          "type": "string"
+        },
+        "stack": {
+          "type": "string"
+        },
+        "open_ports": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "access_control": {
+          "type": "string"
+        },
+        "criticality": {
+          "enum": [
+            "high",
+            "mid",
+            "low",
+            null
+          ]
+        },
+        "wazuh_agent": {
+          "type": [
+            "string",
+            "null"
+          ]
+        },
+        "start_condition": {
+          "type": "string"
+        },
+        "scope": {
+          "$ref": "#/$defs/asset_scope"
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
+    "objective": {
+      "type": "object",
+      "required": [
+        "objective_id",
+        "title",
+        "type",
+        "success_criteria"
+      ],
+      "properties": {
+        "objective_id": {
+          "$ref": "#/$defs/objective_id"
+        },
+        "title": {
+          "type": "string"
+        },
+        "type": {
+          "enum": [
+            "primary",
+            "secondary"
+          ]
+        },
+        "success_criteria": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "achieved",
+            "partial",
+            "not_achieved",
+            null
+          ]
+        },
+        "time_to_achieve_sec": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "scenario_ids": {
+          "$ref": "#/$defs/ids"
+        },
+        "instance_ids": {
+          "$ref": "#/$defs/ids"
+        }
+      }
+    },
+    "check_item": {
+      "type": "object",
+      "required": [
+        "code",
+        "results"
+      ],
+      "properties": {
+        "code": {
+          "$ref": "#/$defs/owasp_2025"
+        },
+        "name": {
+          "type": "string"
+        },
+        "checked_items": {
+          "type": "array",
+          "description": "실제로 점검한 취약점. title만 주면 reference/owasp_2025.yaml에서 cwe·check_points를 채움",
+          "items": {
+            "type": "object",
+            "required": [
+              "title"
+            ],
+            "properties": {
+              "title": {
+                "type": "string"
+              },
+              "cwe": {
+                "type": "array",
+                "items": {
+                  "$ref": "#/$defs/cwe"
+                }
+              },
+              "check_points": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "criteria": {
+          "type": "object",
+          "properties": {
+            "good": {
+              "type": "string"
+            },
+            "vulnerable": {
+              "type": "string"
+            }
+          }
+        },
+        "results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "asset_id",
+              "result"
+            ],
+            "properties": {
+              "asset_id": {
+                "$ref": "#/$defs/asset_id"
+              },
+              "result": {
+                "$ref": "#/$defs/check_result"
+              },
+              "instance_ids": {
+                "$ref": "#/$defs/ids"
+              }
+            }
+          }
+        },
+        "note": {
+          "type": "string"
+        }
+      }
+    },
+    "finding": {
+      "type": "object",
+      "required": [
+        "finding_id",
+        "title",
+        "owasp_2025",
+        "cwe",
+        "classification",
+        "overview",
+        "exploit_scenario",
+        "remediation",
+        "code_reviewed"
+      ],
+      "properties": {
+        "finding_id": {
+          "$ref": "#/$defs/finding_id"
+        },
+        "title": {
+          "type": "string",
+          "minLength": 1
+        },
+        "owasp_2025": {
+          "$ref": "#/$defs/owasp_2025"
+        },
+        "cwe": {
+          "type": "array",
+          "minItems": 1,
+          "items": {
+            "$ref": "#/$defs/cwe"
+          }
+        },
+        "classification": {
+          "$ref": "#/$defs/classification"
+        },
+        "severity": {
+          "$ref": "#/$defs/severity",
+          "description": "계산(대표 건 등급)"
+        },
+        "overview": {
+          "$ref": "#/$defs/text"
+        },
+        "exploit_scenario": {
+          "$ref": "#/$defs/text"
+        },
+        "fix_priority": {
+          "$ref": "#/$defs/fix_priority"
+        },
+        "root_cause": {
+          "type": "string"
+        },
+        "remediation": {
+          "type": "object",
+          "required": [
+            "steps"
+          ],
+          "properties": {
+            "cause": {
+              "type": "string"
+            },
+            "steps": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "code_before": {
+              "type": "string"
+            },
+            "code_after": {
+              "type": "string"
+            },
+            "code_lang": {
+              "type": "string"
+            },
+            "config_change": {
+              "type": "string"
+            },
+            "verify": {
+              "type": "string"
+            },
+            "detection_fix_ids": {
+              "$ref": "#/$defs/ids"
+            }
+          }
+        },
+        "code_reviewed": {
+          "type": "boolean"
+        },
+        "references": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "masked": {
+          "type": "boolean"
+        }
+      }
+    },
+    "finding_instance": {
+      "type": "object",
+      "required": [
+        "instance_id",
+        "finding_id",
+        "asset_id",
+        "location",
+        "cvss",
+        "severity",
+        "status"
+      ],
+      "properties": {
+        "instance_id": {
+          "$ref": "#/$defs/instance_id"
+        },
+        "finding_id": {
+          "$ref": "#/$defs/finding_id"
+        },
+        "asset_id": {
+          "$ref": "#/$defs/asset_id"
+        },
+        "location": {
+          "type": "object",
+          "required": [
+            "url"
+          ],
+          "properties": {
+            "url": {
+              "type": "string"
+            },
+            "method": {
+              "type": "string"
+            },
+            "param": {
+              "type": "string"
+            }
+          }
+        },
+        "path_found": {
+          "type": "string"
+        },
+        "cvss": {
+          "type": "object",
+          "required": [
+            "vector",
+            "score"
+          ],
+          "properties": {
+            "version": {
+              "type": "string"
+            },
+            "vector": {
+              "type": "string"
+            },
+            "score": {
+              "type": "number"
+            }
+          }
+        },
+        "severity": {
+          "$ref": "#/$defs/severity"
+        },
+        "cve_ids": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/cve"
+          }
+        },
+        "discovery": {
+          "$ref": "#/$defs/discovery"
+        },
+        "intentional": {
+          "type": "boolean"
+        },
+        "poc": {
+          "type": "object",
+          "properties": {
+            "location": {
+              "type": "string"
+            },
+            "steps": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "request": {
+              "type": "string"
+            },
+            "explanation": {
+              "type": "string"
+            },
+            "response": {
+              "type": "string"
+            },
+            "result_facts": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "request_figs": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "freeform": {
+              "type": "boolean"
+            }
+          }
+        },
+        "diff": {
+          "type": "string"
+        },
+        "status": {
+          "$ref": "#/$defs/finding_status"
+        },
+        "step_ids": {
+          "$ref": "#/$defs/ids"
+        },
+        "test_ids": {
+          "$ref": "#/$defs/ids"
+        },
+        "evidence_ids": {
+          "$ref": "#/$defs/ids"
+        },
+        "masked": {
+          "type": "boolean"
+        }
+      }
+    },
+    "scenario": {
+      "type": "object",
+      "required": [
+        "scenario_id",
+        "name",
+        "objective_ids",
+        "start_condition",
+        "steps"
+      ],
+      "properties": {
+        "scenario_id": {
+          "$ref": "#/$defs/scenario_id"
+        },
+        "name": {
+          "type": "string"
+        },
+        "objective_ids": {
+          "$ref": "#/$defs/ids"
+        },
+        "start_condition": {
+          "enum": [
+            "external",
+            "member",
+            "assumed_breach"
+          ]
+        },
+        "path_summary": {
+          "type": "string"
+        },
+        "result_summary": {
+          "type": "string"
+        },
+        "threat_cards": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "card": {
+                "type": "string"
+              },
+              "reason": {
+                "type": "string"
+              },
+              "approver": {
+                "type": "string"
+              },
+              "used_at": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "impact": {
+          "type": "object",
+          "properties": {
+            "data": {
+              "type": "string"
+            },
+            "service": {
+              "type": "string"
+            },
+            "if_real": {
+              "type": "string"
+            },
+            "severity_gap": {
+              "type": "string"
+            }
+          }
+        },
+        "steps": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/scenario_step"
+          }
+        },
+        "scope_note": {
+          "type": "string"
+        },
+        "performed": {
+          "type": "string"
+        },
+        "diagram": {
+          "type": "string"
+        },
+        "authors": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "causes": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "clues": {
+          "type": "array"
+        },
+        "pitfalls": {
+          "type": "array"
+        },
+        "cleanup": {
+          "type": "array"
+        },
+        "blocking": {
+          "type": "array"
+        }
+      }
+    },
+    "scenario_step": {
+      "type": "object",
+      "required": [
+        "step_id",
+        "name",
+        "purpose",
+        "start_at",
+        "end_at",
+        "source_ip",
+        "asset_id",
+        "attack_technique",
+        "actions",
+        "result",
+        "expected_artifacts"
+      ],
+      "properties": {
+        "step_id": {
+          "$ref": "#/$defs/step_id"
+        },
+        "name": {
+          "type": "string"
+        },
+        "purpose": {
+          "type": "string"
+        },
+        "start_at": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/datetime"
+            },
+            {
+              "$ref": "#/$defs/date"
+            },
+            {
+              "const": ""
+            }
+          ]
+        },
+        "end_at": {
+          "anyOf": [
+            {
+              "$ref": "#/$defs/datetime"
+            },
+            {
+              "$ref": "#/$defs/date"
+            },
+            {
+              "const": ""
+            }
+          ]
+        },
+        "source_ip": {
+          "$ref": "#/$defs/ip"
+        },
+        "asset_id": {
+          "$ref": "#/$defs/asset_id"
+        },
+        "instance_ids": {
+          "$ref": "#/$defs/ids"
+        },
+        "attack_technique": {
+          "type": "string"
+        },
+        "actions": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "narrative": {
+          "type": "string"
+        },
+        "result": {
+          "type": "object",
+          "required": [
+            "status"
+          ],
+          "properties": {
+            "status": {
+              "enum": [
+                "success",
+                "failed",
+                "untested"
+              ]
+            },
+            "gained": {
+              "type": "string"
+            },
+            "blocked_reason": {
+              "type": "string"
+            }
+          }
+        },
+        "expected_artifacts": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "detection_idea": {
+          "type": "string"
+        },
+        "actual_detection": {
+          "type": [
+            "object",
+            "null"
+          ],
+          "properties": {
+            "outcome": {
+              "$ref": "#/$defs/outcome"
+            },
+            "alert_at": {
+              "type": "string"
+            },
+            "test_id": {
+              "type": "string"
+            }
+          }
+        },
+        "evidence_ids": {
+          "$ref": "#/$defs/ids"
+        },
+        "masked": {
+          "type": "boolean"
+        },
+        "time_basis": {
+          "enum": [
+            "log",
+            "screen",
+            "estimate",
+            "unknown",
+            ""
+          ]
+        },
+        "tactic": {
+          "type": "string"
+        },
+        "flow": {
+          "type": "array"
+        },
+        "rationale": {
+          "type": "string"
+        },
+        "target_impact": {
+          "type": "string"
+        },
+        "test_ids": {
+          "$ref": "#/$defs/ids"
+        }
+      }
+    },
+    "evidence": {
+      "type": "object",
+      "required": [
+        "evidence_id",
+        "kind",
+        "path",
+        "masked"
+      ],
+      "properties": {
+        "evidence_id": {
+          "$ref": "#/$defs/evidence_id"
+        },
+        "kind": {
+          "enum": [
+            "screenshot",
+            "http",
+            "log",
+            "alert_json",
+            "file"
+          ]
+        },
+        "path": {
+          "type": "string"
+        },
+        "caption": {
+          "type": "string"
+        },
+        "owner_id": {
+          "type": "string",
+          "description": "증거가 들어 있던 페이지의 ID(V-NN-N, SN-STEPN, D-NN 등). 인프라 구성도는 P1, 관제 구성도는 B1"
+        },
+        "masked": {
+          "type": "boolean"
+        },
+        "team": {
+          "type": "string",
+          "enum": [
+            "red",
+            "blue"
+          ],
+          "description": "증거 번호 대역(레드 001~, 블루 500~)"
+        }
+      }
+    },
+    "patch": {
+      "type": "object",
+      "required": [
+        "patch_id",
+        "title",
+        "instance_ids",
+        "type",
+        "scope",
+        "applied_on",
+        "owner"
+      ],
+      "properties": {
+        "patch_id": {
+          "$ref": "#/$defs/patch_id"
+        },
+        "title": {
+          "type": "string"
+        },
+        "instance_ids": {
+          "$ref": "#/$defs/ids"
+        },
+        "type": {
+          "$ref": "#/$defs/patch_type"
+        },
+        "scope": {
+          "$ref": "#/$defs/patch_scope"
+        },
+        "applied_on": {
+          "$ref": "#/$defs/date"
+        },
+        "owner": {
+          "type": "string"
+        },
+        "change_location": {
+          "type": "string"
+        },
+        "change_detail": {
+          "type": "string"
+        }
+      }
+    },
+    "retest": {
+      "type": "object",
+      "required": [
+        "instance_id",
+        "retested_on",
+        "result"
+      ],
+      "properties": {
+        "instance_id": {
+          "$ref": "#/$defs/instance_id"
+        },
+        "patch_ids": {
+          "$ref": "#/$defs/ids"
+        },
+        "retested_on": {
+          "$ref": "#/$defs/date"
+        },
+        "result": {
+          "$ref": "#/$defs/finding_status"
+        },
+        "chain_blocked": {
+          "type": [
+            "boolean",
+            "null"
+          ]
+        },
+        "evidence_ids": {
+          "$ref": "#/$defs/ids"
+        }
+      }
+    },
+    "test_case": {
+      "type": "object",
+      "required": [
+        "test_id",
+        "source",
+        "source_ref",
+        "tactic",
+        "technique",
+        "procedure",
+        "status",
+        "expected_observable"
+      ],
+      "properties": {
+        "test_id": {
+          "$ref": "#/$defs/test_id"
+        },
+        "source": {
+          "enum": [
+            "scenario_step",
+            "finding_instance",
+            "attack_emulation"
+          ]
+        },
+        "source_ref": {
+          "type": "string"
+        },
+        "tactic": {
+          "type": "string"
+        },
+        "technique": {
+          "type": "string"
+        },
+        "procedure": {
+          "type": "string"
+        },
+        "team": {
+          "type": "string"
+        },
+        "status": {
+          "enum": [
+            "planned",
+            "executed"
+          ]
+        },
+        "expected_observable": {
+          "type": "string"
+        },
+        "executed_at": {
+          "$ref": "#/$defs/datetime"
+        },
+        "source_ip": {
+          "$ref": "#/$defs/ip"
+        },
+        "alerts": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "rule_id": {
+                "type": "integer"
+              },
+              "level": {
+                "type": "integer"
+              },
+              "agent": {
+                "type": "string"
+              },
+              "alert_at": {
+                "$ref": "#/$defs/datetime"
+              }
+            }
+          }
+        },
+        "latency_sec": {
+          "type": [
+            "integer",
+            "null"
+          ]
+        },
+        "outcome": {
+          "$ref": "#/$defs/outcome"
+        },
+        "score": {
+          "$ref": "#/$defs/ptef_score"
+        },
+        "gap": {
+          "$ref": "#/$defs/gap"
+        },
+        "miss_analysis": {
+          "type": "object",
+          "properties": {
+            "expected_log": {
+              "type": "string"
+            },
+            "collected": {
+              "type": "string"
+            },
+            "needed_rule": {
+              "type": "string"
+            }
+          }
+        },
+        "triage": {
+          "type": "object",
+          "properties": {
+            "ack_at": {
+              "$ref": "#/$defs/datetime"
+            },
+            "verdict": {
+              "enum": [
+                "true_positive",
+                "false_positive"
+              ]
+            },
+            "action": {
+              "type": "string"
+            },
+            "resolved_at": {
+              "$ref": "#/$defs/datetime"
+            },
+            "owner": {
+              "type": "string"
+            }
+          }
+        },
+        "fix_ids": {
+          "$ref": "#/$defs/ids"
+        },
+        "evidence_ids": {
+          "$ref": "#/$defs/ids"
+        },
+        "masked": {
+          "type": "boolean"
+        }
+      }
+    },
+    "detection_fix": {
+      "type": "object",
+      "required": [
+        "fix_id",
+        "test_ids",
+        "name",
+        "goal",
+        "categorization",
+        "rule_ids"
+      ],
+      "properties": {
+        "fix_id": {
+          "$ref": "#/$defs/fix_id"
+        },
+        "name": {
+          "type": "string"
+        },
+        "test_ids": {
+          "$ref": "#/$defs/ids"
+        },
+        "goal": {
+          "type": "string"
+        },
+        "categorization": {
+          "type": "object",
+          "properties": {
+            "tactic": {
+              "type": "string"
+            },
+            "technique": {
+              "type": "string"
+            },
+            "gap": {
+              "$ref": "#/$defs/gap"
+            }
+          }
+        },
+        "strategy_abstract": {
+          "type": "string"
+        },
+        "technical_context": {
+          "type": "string"
+        },
+        "blind_spots": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "false_positives": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "validation": {
+          "type": "object",
+          "properties": {
+            "procedure": {
+              "type": "string"
+            },
+            "expected_alert": {
+              "type": "string"
+            },
+            "result": {
+              "type": "string"
+            }
+          }
+        },
+        "priority": {
+          "type": "object",
+          "properties": {
+            "level": {
+              "type": "integer"
+            },
+            "rationale": {
+              "type": "string"
+            }
+          }
+        },
+        "response": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "rule_ids": {
+          "type": "array",
+          "items": {
+            "type": "integer"
+          }
+        },
+        "files": {
+          "type": "array",
+          "items": {
+            "type": "string"
+          }
+        },
+        "rule_source": {
+          "type": "string",
+          "description": "룰 XML 전문(부록 A, AI 입력)"
+        },
+        "tuning": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "period": {
+                "type": "string"
+              },
+              "alerts": {
+                "type": "integer"
+              },
+              "false_positives": {
+                "type": "integer"
+              },
+              "cause": {
+                "type": "string"
+              },
+              "action": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "retest": {
+          "type": "object",
+          "properties": {
+            "score_after": {
+              "$ref": "#/$defs/ptef_score"
+            },
+            "outcome_after": {
+              "$ref": "#/$defs/outcome"
+            },
+            "at": {
+              "$ref": "#/$defs/datetime"
+            },
+            "evidence_ids": {
+              "$ref": "#/$defs/ids"
+            },
+            "variants": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "procedure": {
+                    "type": "string"
+                  },
+                  "outcome": {
+                    "$ref": "#/$defs/outcome"
+                  },
+                  "score": {
+                    "$ref": "#/$defs/ptef_score"
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "blue": {
+      "type": "object",
+      "properties": {
+        "monitoring_env": {
+          "type": "object",
+          "properties": {
+            "wazuh_version": {
+              "type": "string"
+            },
+            "deployment": {
+              "type": "string"
+            },
+            "design_notes": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "diagram_evidence_id": {
+              "type": "string"
+            },
+            "maturity": {
+              "type": "object",
+              "properties": {
+                "current": {
+                  "type": "string"
+                },
+                "next": {
+                  "type": "string"
+                },
+                "conditions": {
+                  "type": "string"
+                }
+              }
+            }
+          }
+        },
+        "log_sources": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "required": [
+              "asset_id",
+              "source",
+              "collected",
+              "decoder"
+            ],
+            "properties": {
+              "asset_id": {
+                "type": "string"
+              },
+              "zone": {
+                "type": "string"
+              },
+              "agent": {
+                "type": "string"
+              },
+              "source": {
+                "type": "string"
+              },
+              "path": {
+                "type": "string"
+              },
+              "collected": {
+                "type": "boolean"
+              },
+              "decoder": {
+                "enum": [
+                  "builtin",
+                  "custom",
+                  "none"
+                ]
+              },
+              "rule_ids": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                }
+              },
+              "captured_at": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "modules": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "module": {
+                "enum": [
+                  "fim",
+                  "sca",
+                  "vulnerability_detection",
+                  "active_response"
+                ]
+              },
+              "asset_ids": {
+                "$ref": "#/$defs/ids"
+              },
+              "config_summary": {
+                "type": "string"
+              },
+              "ar_trigger_rule_ids": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                }
+              },
+              "ar_action": {
+                "type": "string"
+              },
+              "ar_timeout_sec": {
+                "type": "integer"
+              }
+            }
+          }
+        },
+        "response_procedure": {
+          "type": "object",
+          "properties": {
+            "channels": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "min_level": {
+              "type": "integer"
+            },
+            "owners": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "check_interval": {
+              "type": "string"
+            },
+            "steps": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "verification_conditions": {
+          "type": "object",
+          "properties": {
+            "mode": {
+              "enum": [
+                "blind",
+                "collaborative"
+              ]
+            },
+            "tester_ip_allowed": {
+              "type": "boolean"
+            },
+            "active_response_enabled": {
+              "type": "boolean"
+            },
+            "ruleset": {
+              "type": "object",
+              "properties": {
+                "base_version": {
+                  "type": "string"
+                },
+                "custom_rule_ids": {
+                  "type": "array",
+                  "items": {
+                    "type": "integer"
+                  }
+                }
+              }
+            },
+            "ntp_checked": {
+              "type": "boolean"
+            },
+            "period": {
+              "$ref": "#/$defs/period"
+            }
+          }
+        },
+        "test_cases": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/test_case"
+          }
+        },
+        "detection_fixes": {
+          "type": "array",
+          "items": {
+            "$ref": "#/$defs/detection_fix"
+          }
+        },
+        "incident": {
+          "type": "object",
+          "properties": {
+            "scenario_id": {
+              "type": "string"
+            },
+            "summary": {
+              "type": "string"
+            },
+            "timeline": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "at": {
+                    "type": "string"
+                  },
+                  "source": {
+                    "type": "string"
+                  },
+                  "attacker_action": {
+                    "type": "string"
+                  },
+                  "defender_action": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "detection": {
+              "type": "object",
+              "properties": {
+                "first_seen_at": {
+                  "type": "string"
+                },
+                "basis": {
+                  "type": "string"
+                }
+              }
+            },
+            "containment": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            },
+            "impact": {
+              "type": "object",
+              "properties": {
+                "asset_ids": {
+                  "$ref": "#/$defs/ids"
+                },
+                "data": {
+                  "type": "string"
+                }
+              }
+            },
+            "iocs": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "type": {
+                    "type": "string"
+                  },
+                  "value": {
+                    "type": "string"
+                  }
+                }
+              }
+            },
+            "post_actions": {
+              "type": "array",
+              "items": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "sca_results": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "asset_id": {
+                "type": "string"
+              },
+              "policy": {
+                "type": "string"
+              },
+              "score_before": {
+                "type": "number"
+              },
+              "score_after": {
+                "type": "number"
+              },
+              "failed_items": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "vuln_packages_before": {
+                "type": "integer"
+              },
+              "vuln_packages_after": {
+                "type": "integer"
+              },
+              "captured_at": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "cloud_watch": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "target": {
+                "enum": [
+                  "security_group",
+                  "iam",
+                  "console_login"
+                ]
+              },
+              "event_examples": {
+                "type": "array",
+                "items": {
+                  "type": "string"
+                }
+              },
+              "collected": {
+                "type": "boolean"
+              },
+              "rule_ids": {
+                "type": "array",
+                "items": {
+                  "type": "integer"
+                }
+              },
+              "notes": {
+                "type": "string"
+              }
+            }
+          }
+        },
+        "improvement_tasks": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "title": {
+                "type": "string"
+              },
+              "gap": {
+                "$ref": "#/$defs/gap"
+              },
+              "test_ids": {
+                "$ref": "#/$defs/ids"
+              },
+              "fix_ids": {
+                "$ref": "#/$defs/ids"
+              },
+              "owner": {
+                "type": "string"
+              },
+              "due": {
+                "type": "string"
+              },
+              "status": {
+                "enum": [
+                  "todo",
+                  "in_progress",
+                  "done"
+                ]
+              }
+            }
+          }
+        },
+        "ops_stats": {
+          "type": "object",
+          "properties": {
+            "period": {
+              "$ref": "#/$defs/period"
+            },
+            "alerts_by_period": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "period": {
+                    "type": "string"
+                  },
+                  "count": {
+                    "type": "integer"
+                  }
+                }
+              }
+            },
+            "top_rules": {
+              "type": "array",
+              "items": {
+                "type": "object",
+                "properties": {
+                  "rule_id": {
+                    "type": "integer"
+                  },
+                  "count": {
+                    "type": "integer"
+                  }
+                }
+              }
+            },
+            "alerts_total": {
+              "type": "integer"
+            },
+            "false_positives": {
+              "type": "integer"
+            }
+          }
+        },
+        "lessons": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string"
+              },
+              "cited_ids": {
+                "$ref": "#/$defs/ids"
+              }
+            }
+          }
+        },
+        "strengths": {
+          "type": "array",
+          "items": {
+            "type": "object",
+            "properties": {
+              "text": {
+                "type": "string"
+              },
+              "cited_ids": {
+                "$ref": "#/$defs/ids"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

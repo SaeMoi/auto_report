@@ -1,0 +1,22 @@
+# AI 작업 어댑터 설정(규격서 5-5, 5-8)
+# 기본은 agent: Claude Code·Codex 에이전트가 work/tasks.jsonl을 읽고 work/results.jsonl을 직접 씀
+# 나머지는 `reportgen ai --adapter <이름>`으로 프로그램이 직접 호출할 때 씀
+default_adapter: agent
+
+adapters:
+  claude_cli:
+    command: ["claude", "-p", "--output-format", "text"]
+    timeout_sec: 180
+  codex_cli:
+    command: ["codex", "exec", "--skip-git-repo-check"]
+    timeout_sec: 180
+  anthropic_api:
+    model: claude-opus-5-5
+    max_tokens: 2000
+    temperature: 0.2
+    api_key_env: ANTHROPIC_API_KEY
+  openai_api:
+    model: gpt-5
+    temperature: 0.2
+    api_key_env: OPENAI_API_KEY
+  fake: {}       # 테스트용: 원문을 그대로 돌려줌

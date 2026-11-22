@@ -1,0 +1,31 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "reportgen"
+version = "0.1.0"
+description = "sesacedu 보안 프로젝트 보고서 자동화 도구 (노션 → 검사 → AI 문장 작업 → DOCX·PDF)"
+requires-python = ">=3.13"
+dependencies = [
+  "PyYAML>=6.0",
+  "jsonschema>=4.20",
+  "Jinja2>=3.1",
+  "python-docx>=1.1",
+  "cvss>=3.1",
+]
+
+[project.optional-dependencies]
+notion = ["requests>=2.31"]
+anthropic = ["anthropic>=0.40"]
+openai = ["openai>=1.40"]
+dev = ["pytest>=8", "Pillow>=10"]   # Pillow: samples/make_demo.py 시연 그림
+
+[project.scripts]
+reportgen = "reportgen.cli:main"
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]

@@ -1,0 +1,41 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "reportgen/ai_output.schema.json",
+  "title": "AI 작업 입출력 (규격서 v0.3 5-3, 5-8)",
+  "description": "work/tasks.jsonl 한 줄 = task, work/results.jsonl 한 줄 = result. 에이전트(Claude Code·Codex)나 모델 어댑터가 result를 씀",
+  "$defs": {
+    "task": {
+      "type": "object",
+      "required": ["task_id", "mode", "field", "target_id", "prompt"],
+      "additionalProperties": false,
+      "properties": {
+        "task_id": {"type": "string", "description": "<target_id>:<field>, 예: V-03:overview"},
+        "mode": {"enum": ["write", "polish"]},
+        "field": {"type": "string", "description": "예: finding.overview, scenario_step.narrative"},
+        "target_id": {"type": "string"},
+        "prompt": {"type": "string", "description": "prompts/의 지시문을 채운 전체 지시문"},
+        "source_text": {"type": ["string", "null"], "description": "polish일 때 사람이 쓴 원문"},
+        "context": {"type": "object", "description": "마스킹이 끝난 연결 데이터 요약"},
+        "allowed_ids": {"type": "array", "items": {"type": "string"}, "description": "인용 가능한 ID(R-15)"},
+        "length": {"type": "object", "description": "REPORT_STYLE field_length 값"},
+        "style": {"enum": ["ST-02", "ST-02a", "caption"]}
+      }
+    },
+    "result": {
+      "type": "object",
+      "required": ["task_id", "text"],
+      "additionalProperties": false,
+      "properties": {
+        "task_id": {"type": "string"},
+        "mode": {"enum": ["write", "polish"]},
+        "text": {"type": ["string", "array"], "description": "문장. remediation.steps처럼 목록 칸은 문자열 배열"},
+        "cited_ids": {"type": "array", "items": {"type": "string"}},
+        "changes": {"type": "array", "items": {"type": "string"}, "description": "polish에서 바꾼 부분. 바꾸지 않았으면 빈 배열"},
+        "needs_review": {"type": "boolean"},
+        "notes": {"type": "string"},
+        "model": {"type": "string", "description": "작성한 모델·도구 이름(예: claude-code, codex)"}
+      }
+    }
+  },
+  "oneOf": [{"$ref": "#/$defs/task"}, {"$ref": "#/$defs/result"}]
+}

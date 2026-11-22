@@ -1,0 +1,19 @@
+{#- 테스트 계정 표기(2026-11-22). 본문에는 limit개만 한 줄에 하나씩(권한마다 첫 계정 우선, 나머지는 표 순서, 보일 때는 표 순서), 나머지는 「외 N개」. 전체 목록은 부록. -#}
+{% macro one(t) -%}
+{{ t.name|acct }}{% if t.role %} · {{ t.role }}{% endif %}
+{%- endmacro %}
+{% macro info(accts, appx, limit=5) -%}
+{% for t in accts|pick_accounts(limit) %}
+{{ '테스트 계정' if loop.first else '' }} :: {{ one(t) }}
+{% endfor %}
+{% if accts|length > limit %}
+ :: 외 {{ accts|length - limit }}개 (전체 {{ accts|length }}개는 {{ appx }})
+{% endif %}
+{%- endmacro %}
+{% macro table(accts) -%}
+| 번호 | 계정 | 권한 |
+| --- | --- | --- |
+{% for t in accts %}
+| {{ loop.index }} | {{ t.name|acct|cell }} | {{ t.role|cell }} |
+{% endfor %}
+{%- endmacro %}

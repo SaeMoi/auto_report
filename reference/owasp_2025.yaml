@@ -1,0 +1,333 @@
+# OWASP Top 10:2025 기준 데이터 (진단 항목·분류·점검 내용의 단일 원본)
+# - 쓰는 곳: 결과 보고서 2-2 「주요 점검 취약점」, 2-3 「취약점별 점검 내용」, 5장 취약점 유형, 부록 B 판단 기준, R-13 코드 검사
+# - 원본 문서: docs/분류 코드 가이드.md 2장(취약점명·CWE), docs/OWASP_2025_정리(정의·원인·점검 방법·판단 기준)
+# - 문구를 바꾸면 위 두 문서도 함께 고침
+# - items[].check_points: 2-3 표에 그대로 들어가는 고정 문구(AI 작성 없음). 실제로 점검한 항목만 check_item.checked_items에 올림
+version: "0.1"
+source: https://top10.owasp.org/2025/
+
+categories:
+  - code: A01
+    name: Broken Access Control
+    name_ko: 접근 통제 미흡
+    summary: 인증된 사용자가 권한 밖의 데이터·기능에 접근함
+    definition: 사용자가 자기 권한 밖의 데이터나 기능에 접근할 수 있는 상태임. 인증은 정상이어도 서버가 「이 사용자가 이 대상에 접근해도 되는가」를 확인하지 않을 때 발생함
+    causes:
+      - 객체 소유권 검증 누락
+      - 기능 단위 권한 검증을 클라이언트에만 둠
+      - 서버가 외부 요청 대상 URL을 검증하지 않음
+    criteria:
+      good: 서버가 소유권·권한을 확인해 요청을 거부함
+      vulnerable: 다른 사용자의 데이터나 권한 밖 기능이 실행됨
+    items:
+      - title: IDOR
+        cwe: [CWE-639]
+        check_points:
+          - 다른 사용자의 회원·강의·주문 ID로 요청 값을 바꿔 보내고, 서버가 소유권을 확인하는지 점검함
+      - title: 권한 검증 누락
+        cwe: [CWE-862, CWE-285]
+        check_points:
+          - 일반 회원 토큰으로 관리자 API와 강사 전용 기능을 호출하고, 서버가 기능 단위로 권한을 확인하는지 점검함
+      - title: 관리자 페이지 노출
+        cwe: [CWE-425, CWE-284]
+        check_points:
+          - 비허용 IP에서 관리자 프론트·API에 접근하고, 헤더 조작·다른 호스트·하위 경로 직접 요청으로 IP 제한을 우회할 수 있는지 점검함
+      - title: 구역 간 접근 통제 우회
+        cwe: [CWE-284]
+        check_points:
+          - DMZ 서버에서 관리·내부 구역의 포트와 서비스에 접근할 수 있는지 보안그룹 허용 범위와 함께 점검함
+      - title: CSRF
+        cwe: [CWE-352]
+        check_points:
+          - 상태를 바꾸는 요청을 다른 출처에서 보내고, CSRF 토큰·SameSite 쿠키로 요청이 거부되는지 점검함
+      - title: SSRF
+        cwe: [CWE-918]
+        check_points:
+          - URL을 받는 기능에 내부 주소·클라우드 메타데이터 주소를 넣고, 서버가 요청을 보내는지 점검함
+      - title: 경로 조작
+        cwe: [CWE-22]
+        check_points:
+          - 파일 다운로드·조회 파라미터에 상위 경로(../)를 넣고, 허용 경로 밖의 파일을 받을 수 있는지 점검함
+      - title: 오픈 리다이렉트
+        cwe: [CWE-601]
+        check_points:
+          - 로그인 후 이동 주소 같은 리다이렉트 파라미터에 외부 도메인을 넣고, 검증 없이 이동하는지 점검함
+
+  - code: A02
+    name: Security Misconfiguration
+    name_ko: 보안 설정 미흡
+    summary: 기본 설정·불필요한 기능·정보 노출 등 설정 미흡
+    definition: 서버·프레임워크·클라우드의 설정이 안전하지 않은 상태임. 기본 설정을 그대로 쓰거나, 개발용 기능과 불필요한 정보가 운영 환경에 남아 있을 때 발생함
+    causes:
+      - 기본 설정과 개발용 기능이 운영에 남음
+      - 불필요한 서비스·메서드 허용
+      - 보안 헤더·쿠키 속성 미설정
+    criteria:
+      good: 공격에 쓸 수 있는 정보·기능이 노출되지 않음
+      vulnerable: 공격에 쓸 수 있는 정보·기능이 노출됨
+    items:
+      - title: 디렉터리 인덱싱
+        cwe: [CWE-548]
+        check_points:
+          - 정적 파일·업로드 경로를 직접 요청하고, 파일 목록이 출력되는지 점검함
+      - title: 과도한 정보 노출
+        cwe: [CWE-200, CWE-615]
+        check_points:
+          - 응답 헤더·HTML 주석·API 문서(Swagger)·백업 파일을 확인하고, 내부 경로·버전·계정 정보가 노출되는지 점검함
+      - title: 디버그 기능 운영 노출
+        cwe: [CWE-489]
+        check_points:
+          - 개발용 엔드포인트와 관리 도구 경로(actuator 등)를 직접 요청하고, 운영 환경에서 동작하는지 점검함
+      - title: 불필요한 HTTP 메서드 허용
+        cwe: [CWE-650]
+        check_points:
+          - OPTIONS·PUT·DELETE·TRACE 요청을 보내고, 서비스에 필요 없는 메서드가 허용되는지 점검함
+      - title: 쿠키 보안 속성 누락
+        cwe: [CWE-1004, CWE-614]
+        check_points:
+          - 세션·토큰 쿠키에 HttpOnly·Secure·SameSite 속성이 설정되어 있는지 점검함
+      - title: XXE
+        cwe: [CWE-611]
+        check_points:
+          - XML을 받는 기능에 외부 엔티티 선언을 넣고, 서버가 외부 엔티티를 해석하는지 점검함
+
+  - code: A03
+    name: Software Supply Chain Failures
+    name_ko: 소프트웨어 공급망 보안 미흡
+    summary: 외부 구성요소·빌드·배포 과정의 취약점이나 변조
+    definition: 서비스가 쓰는 외부 라이브러리·프레임워크·빌드 도구에 알려진 취약점이 있거나, 그 출처와 버전을 관리하지 않는 상태임
+    causes:
+      - 구성요소 목록(SBOM)과 버전 관리 부재
+      - 보안 패치 미적용
+      - 검증되지 않은 저장소·패키지 사용
+    criteria:
+      good: 알려진 취약점이 있는 버전을 쓰지 않음
+      vulnerable: 해당 버전의 알려진 취약점을 실제로 확인함. 버전 노출만 확인한 경우는 A02로 분류함
+    items:
+      - title: 알려진 취약 버전 구성요소 사용
+        cwe: [CWE-1395, CWE-1104]
+        check_points:
+          - 응답·정적 파일에서 프레임워크와 라이브러리 버전을 확인하고, 공개된 CVE와 대조해 실제로 재현되는지 점검함
+
+  - code: A04
+    name: Cryptographic Failures
+    name_ko: 암호화 실패
+    summary: 민감정보 암호화 누락이나 약한 암호 사용
+    definition: 비밀번호·토큰·개인정보 같은 민감 데이터를 암호화하지 않거나, 약한 알고리즘·키로 보호하는 상태임
+    causes:
+      - 평문 통신 구간 존재
+      - 민감정보 평문 저장
+      - 짧은 비밀 키·취약 알고리즘 사용
+      - 솔트 없는 해시
+    criteria:
+      good: 민감 데이터가 충분한 강도로 암호화됨
+      vulnerable: 평문이거나 키를 추측·위조할 수 있음
+    items:
+      - title: 데이터 평문 전송
+        cwe: [CWE-319]
+        check_points:
+          - 로그인·개인정보 전송 구간과 내부 구간이 HTTPS·TLS로 암호화되는지 점검함
+      - title: 민감정보 평문 저장
+        cwe: [CWE-312]
+        check_points:
+          - DB·브라우저 저장소·설정 파일에 비밀번호·토큰·개인정보가 평문으로 저장되는지 점검함
+      - title: 약한 JWT 서명 키·알고리즘
+        cwe: [CWE-326, CWE-327]
+        check_points:
+          - JWT의 서명 알고리즘을 확인하고, 짧은 비밀 키를 사전 대입으로 찾거나 none·알고리즘 혼동으로 위조할 수 있는지 점검함
+      - title: 약한 비밀번호 해시
+        cwe: [CWE-916]
+        check_points:
+          - 저장된 비밀번호의 해시 형식을 확인하고, 솔트와 적절한 해시 함수(bcrypt 등)를 쓰는지 점검함
+
+  - code: A05
+    name: Injection
+    name_ko: 인젝션
+    summary: 사용자 입력이 쿼리·명령·스크립트로 해석됨
+    definition: 사용자 입력이 검증 없이 SQL·명령어·HTML 같은 실행 구문에 들어가, 공격자가 의도한 코드가 실행되는 상태임. XSS도 이 범주에 포함됨
+    causes:
+      - 입력값을 문자열로 이어 붙여 쿼리·명령을 만듦
+      - 출력 시 인코딩 누락
+      - 템플릿에 입력을 직접 렌더링함
+    criteria:
+      good: 입력이 데이터로만 처리됨
+      vulnerable: 입력이 구문으로 해석돼 실행됨
+    items:
+      - title: SQL Injection
+        cwe: [CWE-89]
+        check_points:
+          - 검색·정렬·ID 파라미터에 SQL 구문을 넣고, 응답·오류·지연 시간으로 쿼리가 바뀌는지 점검함
+      - title: Reflected XSS
+        cwe: [CWE-79]
+        check_points:
+          - 검색어·오류 메시지에 반사되는 파라미터에 스크립트 구문을 넣고, 응답에서 인코딩 없이 출력되는지 점검함
+      - title: Stored XSS
+        cwe: [CWE-79]
+        check_points:
+          - 게시글·댓글·프로필에 스크립트 구문을 저장하고, 다른 사용자 화면에서 실행되는지 점검함
+      - title: DOM XSS
+        cwe: [CWE-79]
+        check_points:
+          - URL 해시·쿼리 값을 화면에 그리는 클라이언트 코드를 확인하고, 스크립트가 실행되는지 점검함
+      - title: OS Command Injection
+        cwe: [CWE-78]
+        check_points:
+          - 서버 명령을 호출하는 기능에 명령 구분자(;, |, &&)를 넣고, 추가 명령이 실행되는지 점검함
+      - title: 코드 인젝션 · SSTI
+        cwe: [CWE-94, CWE-1336]
+        check_points:
+          - 템플릿에 렌더링되는 입력에 템플릿 표현식을 넣고, 서버에서 계산·실행되는지 점검함
+      - title: 프롬프트 인젝션
+        cwe: [CWE-1427]
+        check_points:
+          - AI 기능이 있는 경우에만, 입력에 지시문을 넣어 시스템 지시나 데이터 접근 제한을 우회할 수 있는지 점검함
+
+  - code: A06
+    name: Insecure Design
+    name_ko: 안전하지 않은 설계
+    summary: 설계 단계에서 보안 통제가 빠짐
+    definition: 구현 실수가 아니라 설계 단계에서 보안 통제가 빠진 상태임. 코드를 고쳐도 업무 흐름 자체를 바꾸지 않으면 해결되지 않음
+    causes:
+      - 업무 흐름의 단계·값 검증을 서버에서 하지 않음
+      - 업로드·반복 요청 같은 기능에 제한을 설계하지 않음
+    criteria:
+      good: 업무 규칙이 서버에서 강제됨
+      vulnerable: 규칙을 우회해 이득을 얻거나 업로드한 파일이 실행됨
+    items:
+      - title: 업무 흐름 검증 누락
+        cwe: [CWE-841]
+        check_points:
+          - 결제·수강 신청 같은 단계형 기능에서 단계를 건너뛰거나 가격·수량 값을 바꾸고, 서버가 거부하는지 점검함
+      - title: 악성 파일 업로드
+        cwe: [CWE-434]
+        check_points:
+          - 프로필 사진·강의 자료 업로드에 실행 가능한 파일과 확장자 우회 파일을 올리고, 서버에서 실행되는지 점검함
+      - title: 반복 요청 통제 없음
+        cwe: [CWE-799]
+        check_points:
+          - 쿠폰·포인트·인증번호 발송 같은 업무 기능을 반복 호출하고, 횟수 제한이 있는지 점검함
+
+  - code: A07
+    name: Authentication Failures
+    name_ko: 인증 실패
+    summary: 사용자 확인과 세션 관리가 미흡함
+    definition: 사용자가 누구인지 확인하는 절차가 없거나 우회되는 상태임. 로그인·세션·토큰 관리가 모두 포함됨
+    causes:
+      - 중요 기능에 인증 없음
+      - 시도 횟수 제한 없음
+      - 약한 비밀번호 정책
+      - 세션 만료·재발급 미흡
+      - 토큰 서명 미검증
+    criteria:
+      good: 인증 없이 기능을 쓸 수 없고 세션이 제때 만료됨
+      vulnerable: 인증을 건너뛰거나 다른 사람의 계정으로 로그인할 수 있음
+    items:
+      - title: 인증 누락
+        cwe: [CWE-306]
+        check_points:
+          - 로그인 없이 중요 기능과 API를 호출하고, 인증을 요구하는지 점검함
+      - title: 인증 우회
+        cwe: [CWE-287, CWE-288]
+        check_points:
+          - 다른 경로·파라미터·HTTP 메서드로 같은 기능을 호출하고, 인증 절차를 건너뛸 수 있는지 점검함
+      - title: 무차별 대입 통제 없음
+        cwe: [CWE-307]
+        check_points:
+          - 로그인·OTP에 잘못된 값을 정해진 횟수만큼 보내고, 계정 잠금이나 지연이 적용되는지 점검함
+      - title: 약한 비밀번호 정책
+        cwe: [CWE-521]
+        check_points:
+          - 가입·비밀번호 변경 화면에서 짧거나 단순한 비밀번호가 허용되는지 점검함
+      - title: 취약한 비밀번호 복구
+        cwe: [CWE-640]
+        check_points:
+          - 비밀번호 재설정 토큰·링크의 추측 가능성, 만료, 재사용 여부를 점검함
+      - title: 세션 만료 미흡
+        cwe: [CWE-613]
+        check_points:
+          - JWT 만료 시간을 확인하고, 로그아웃 후 같은 토큰으로 요청이 처리되는지 점검함
+      - title: 세션 고정
+        cwe: [CWE-384]
+        check_points:
+          - 로그인 전에 받은 세션 ID가 로그인 후에도 그대로 쓰이는지 점검함
+      - title: JWT 서명 검증 누락
+        cwe: [CWE-347]
+        check_points:
+          - JWT의 내용이나 서명을 바꿔 보내고, 서버가 서명을 검증해 거부하는지 점검함
+      - title: 쿠키 값 신뢰
+        cwe: [CWE-565]
+        check_points:
+          - 권한·사용자 정보를 담은 쿠키 값을 바꿔 보내고, 서버가 그 값을 그대로 믿는지 점검함
+      - title: 소셜 로그인 state 미검증
+        cwe: [CWE-352]
+        check_points:
+          - OAuth 콜백에서 state 값을 빼거나 바꿔 보내고, 서버가 요청을 거부하는지 점검함
+
+  - code: A08
+    name: Software or Data Integrity Failures
+    name_ko: 소프트웨어·데이터 무결성 실패
+    summary: 코드·데이터의 무결성을 검증하지 않고 신뢰함
+    definition: 서버가 받거나 불러오는 코드·데이터가 변조되지 않았는지 확인하지 않는 상태임
+    causes:
+      - 신뢰할 수 없는 데이터 역직렬화
+      - 서명·해시 검증 없는 외부 스크립트·업데이트 로드
+    criteria:
+      good: 서명·해시로 무결성을 확인함
+      vulnerable: 변조된 데이터가 그대로 처리됨
+    items:
+      - title: 신뢰할 수 없는 데이터 역직렬화
+        cwe: [CWE-502]
+        check_points:
+          - 직렬화된 객체를 받는 API에 변조한 객체를 보내고, 서버가 검증 없이 역직렬화하는지 점검함
+      - title: 무결성 검증 없는 파일·업데이트
+        cwe: [CWE-494, CWE-345]
+        check_points:
+          - 외부에서 불러오는 스크립트·패키지에 무결성 검증(SRI·서명)이 있는지 점검함
+
+  - code: A09
+    name: Security Logging and Alerting Failures
+    name_ko: 보안 로깅·경보 미흡
+    summary: 공격을 기록·탐지·경보하지 못함
+    definition: 공격 시도가 로그에 남지 않거나, 남아도 담당자에게 경보가 가지 않아 대응할 수 없는 상태임
+    causes:
+      - 로그인 실패·권한 오류를 기록하지 않음
+      - 탐지 규칙·알림 부재
+      - 로그에 민감정보 기록
+    criteria:
+      good: 공격이 기록되고 경보가 발생함
+      vulnerable: 기록이나 경보가 없음
+    items:
+      - title: 보안 이벤트 로그 누락
+        cwe: [CWE-778]
+        check_points:
+          - 로그인 실패·권한 오류를 일으킨 뒤 앱 로그에 기록되는지 확인함. 탐지 여부는 블루팀 보고서와 함께 판단함
+      - title: 로그에 민감정보 기록
+        cwe: [CWE-532]
+        check_points:
+          - 앱 로그에 토큰·비밀번호·개인정보가 남는지 점검함
+
+  - code: A10
+    name: Mishandling of Exceptional Conditions
+    name_ko: 예외 상황 처리 미흡
+    summary: 오류·예외 상황을 안전하게 처리하지 못함
+    definition: 오류나 예상하지 못한 입력이 들어왔을 때 서비스가 안전하게 실패하지 않는 상태임. 2025판에서 새로 추가된 범주임
+    causes:
+      - 스택 트레이스·DB 오류를 그대로 응답함
+      - 예외 발생 시 기본값이 「허용」임
+      - 처리되지 않은 예외로 서비스가 중단됨
+    criteria:
+      good: 오류가 나도 내부 정보를 숨기고 요청을 거부함
+      vulnerable: 스택 트레이스가 보이거나 오류 때문에 검증이 통과됨
+    items:
+      - title: 오류 메시지 정보 노출
+        cwe: [CWE-209]
+        check_points:
+          - 잘못된 형식·길이의 값을 보내고, 응답에 스택 트레이스·SQL 오류·내부 경로가 나오는지 점검함
+      - title: 예외 시 검증 우회
+        cwe: [CWE-636]
+        check_points:
+          - 인증·검증 단계에서 오류를 일으키고, 오류가 난 요청이 허용되는지 점검함
+      - title: 처리되지 않은 예외
+        cwe: [CWE-248]
+        check_points:
+          - 예상하지 못한 입력을 보내고, 처리되지 않은 예외로 서비스가 중단되거나 응답이 멈추는지 점검함

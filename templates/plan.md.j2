@@ -1,0 +1,130 @@
+{# 수행 계획서 템플릿 — [양식] 0과 같은 장 구성. 자산·목표·조건·일정은 노션 데이터에서, 규칙·범위 같은 글은 P1 본문을 그대로 옮김 #}
+{% set ps = p.plan_sections or {} %}
+# {{ p.title or '수행 계획서' }}
+
+| 항목 | 내용 |
+| --- | --- |
+| 문서명 | 수행 계획서 |
+| 프로젝트 | {{ p.name }} |
+| 대상 | {{ assets|selectattr('scope', 'equalto', 'in_scope')|map(attribute='host')|select|join(', ') }} |
+| 수행 기간 | {{ p.period.start }} ~ {{ p.period.end }} |
+| 작성자 / 검토자 | {{ p.authors|map(attribute='name')|join(', ') }} / {{ (p.reviewers or [])|join(', ') or '-' }} |
+| 문서 버전 | v{{ p.version }} |
+| 보안 등급 | {{ p.security_level or '대외비 (팀 내부용)' }} |
+
+## 문서 관리 (개정 이력)
+
+| 버전 | 날짜 | 작성자 | 변경 내용 |
+| --- | --- | --- | --- |
+{% for r in p.revisions or [] %}
+| {{ r.version|cell }} | {{ r.date|cell }} | {{ r.author|cell }} | {{ r.changes|cell }} |
+{% endfor %}
+
+## 공통 ID 체계
+
+| ID | 대상 | 만드는 문서 |
+| --- | --- | --- |
+| A-xx | 자산 | 0. 수행 계획서 |
+| O-x | 목표 | 0. 수행 계획서 |
+| V-xx / V-xx-n | 취약점 / 건 | 1. 결과 보고서 Part A |
+| Sn-STEPm | 시나리오 단계 | 1. 결과 보고서 Part B |
+| D-xx | 탐지 검증 테스트 케이스 | 2. 블루팀 보고서 |
+| P-xx | 취약점 패치(조치 기록) | 1. 결과 보고서 8장 (프로그램 발급) |
+| E-xxx | 증거 | 전 문서 (프로그램 발급) |
+| F-xx | 탐지 개선 조치 | 2. 블루팀 보고서 |
+
+- 진단 항목 코드 A01~A10은 OWASP Top 10:2025 범주를 뜻하며, 하이픈이 있는 자산 ID(A-01~)와 구분함
+
+## 위험도 기준
+
+- CVSS 3.1 점수 기준: Critical(9.0 이상), High(7.0~8.9), Medium(4.0~6.9), Low(0.1~3.9), Info
+- 모든 보고서는 위 기준을 동일하게 적용함
+- 위험도 등급은 점검자가 판단하여 기록하고, CVSS 점수는 판단 근거로 함께 적음
+- 점수와 등급 구간이 맞지 않는 경우 검토 목록에 올려 다시 확인함
+
+## 0-1. 요약
+
+{{ p.summary_memo or '[확인 필요] P1 본문 「요약 메모」가 비어 있음' }}
+
+## 0-2. 수행 개요
+
+{{ ps['수행 개요'] or '[확인 필요] P1 본문 「수행 개요」가 비어 있음' }}
+
+## 0-3. 목표
+
+| 목표 ID | 목표 | 우선순위 | 달성 판단 기준 |
+| --- | --- | --- | --- |
+{% for o in objectives %}
+| {{ o.objective_id }} | {{ o.title|cell }} | {{ o.type|objtype }} | {{ o.success_criteria|cell }} |
+{% endfor %}
+
+## 0-4. 자산 목록
+
+| 자산 ID | 호스트 / 도메인 | IP (공인 / 사설) | 구역 | 역할 | OS · 스택 | 열린 포트 | 접근 통제 | 중요도 | 와주 에이전트 |
+| --- | --- | --- | --- | --- | --- | --- | --- | --- | --- |
+{% for a in assets %}
+| {{ a.asset_id }} | {{ a.host|cell }} | {{ (a.ip or {}).public or '-' }} / {{ (a.ip or {}).private or '-' }} | {{ a.zone|zone }} | {{ a.role|cell }} | {{ a.stack|cell }} | {{ a.open_ports|cell }} | {{ a.access_control|cell }} | {{ {'high': '상', 'mid': '중', 'low': '하'}.get(a.criticality, '-') }} | {{ a.wazuh_agent|cell }} |
+{% endfor %}
+
+{% for e in ev.values() if e.owner_id == 'P1' and e.masked %}
+![{{ e.caption or '인프라 구성도' }}]({{ e.relpath }})
+
+[그림 {{ e.evidence_id }}] {{ e.caption or '인프라 구성도' }}
+
+{% endfor %}
+{% if ps['네트워크 구성'] %}
+{{ ps['네트워크 구성'] }}
+
+{% endif %}
+## 0-5. 범위
+
+{{ ps['범위'] or '[확인 필요] P1 본문 「범위」가 비어 있음' }}
+
+## 0-6. 수행 규칙 (RoE)
+
+{{ ps['수행 규칙'] or '[확인 필요] P1 본문 「수행 규칙」이 비어 있음' }}
+{% if p.test_accounts %}
+
+테스트 계정:
+
+| 계정 | 권한 |
+| --- | --- |
+{% for t in p.test_accounts %}
+| {{ t.name|cell }} | {{ t.role|cell }} |
+{% endfor %}
+{% endif %}
+
+## 0-7. IP 허용 및 탐지 설정 정책
+
+| 단계 | 공격 출발지 IP | 보안그룹·WAF 허용 | Active Response | 시작 조건 |
+| --- | --- | --- | --- | --- |
+{% for c in p.conditions or [] %}
+| {{ c.phase|cell }} | {{ c.source_ip|cell }} | {{ '허용' if c.ip_allowed else '허용 해제' }} | {{ c.active_response|onoff }} | {{ c.start_condition|cell }} |
+{% endfor %}
+
+## 0-8. 디컨플릭션 (훈련과 실제 사고 구분)
+
+{{ ps['디컨플릭션'] or '[확인 필요] P1 본문 「디컨플릭션」이 비어 있음' }}
+
+## 0-9. 일정
+
+| 단계 | 기간 | 내용 |
+| --- | --- | --- |
+{% for s in p.schedule or [] %}
+| {{ s.phase|cell }} | {{ s.period|cell }} | {{ s.content|cell }} |
+{% else %}
+| 전체 | {{ p.period.start }} ~ {{ p.period.end }} | - |
+{% endfor %}
+
+## 0-10. 비상 연락 및 중단 절차
+
+{{ ps['비상 연락'] or '[확인 필요] P1 본문 「비상 연락」이 비어 있음' }}
+
+## 0-11. 도구 및 승인
+
+- 사용 도구: {{ tools|join(', ') if tools else '[확인 필요]' }}
+- 딸깍이(자동 진단 도구)는 이번 수행에서 사용하지 않음
+{% if ps['승인'] %}
+
+{{ ps['승인'] }}
+{% endif %}

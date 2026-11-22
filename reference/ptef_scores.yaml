@@ -1,0 +1,70 @@
+# SCYTHE PTEF v4 채점·공백 기준 (블루팀 보고서 3-2·5-1의 단일 원본)
+# - 쓰는 곳: 블루 3-2 채점 기준표, 5-1 공백 분류표, 4-4 지표 계산(탐지율 기준 점수), test_case.score·gap 열거형
+version: "0.1"
+source: https://github.com/scythe-io/purple-team-exercise-framework
+
+detection_threshold: 3   # 탐지율 = score >= 3 비율
+
+scores:
+  - score: 0
+    stage: No Visibility
+    definition: 텔레메트리 미수집
+    wazuh: 에이전트가 해당 로그를 읽지 않음
+  - score: 1
+    stage: Telemetry Available
+    definition: 로그는 수집돼 수동 조회 가능, 룰·헌팅 플레이북 없음
+    wazuh: 아카이브·인덱서에만 존재
+  - score: 2
+    stage: Hunt Capable
+    definition: 헌팅 쿼리·플레이북으로 발견 가능, 자동 경보 없음
+    wazuh: 디코더로 필드 추출, 대시보드 쿼리를 문서화함
+  - score: 3
+    stage: Alert Generated
+    definition: 자동 탐지 룰이 경보 생성
+    wazuh: 룰 매칭, 경보 레벨 이상 기록
+  - score: 4
+    stage: Alert Triaged
+    definition: 분석가가 정탐 판단 후 기한 내 에스컬레이션
+    wazuh: 블루팀이 경보를 확인·판단한 시각 기록
+  - score: 5
+    stage: Full Response
+    definition: 탐지부터 봉쇄·조치까지 설계대로 작동
+    wazuh: Active Response 또는 수동 차단·격리 조치 기록
+
+outcomes:
+  blocked: 차단
+  detected: 탐지
+  not_detected: 미탐
+  invalid: 검증 무효
+
+gaps:
+  - id: visibility
+    name: 가시성 (Visibility)
+    definition: 필요한 텔레메트리 미수집
+    example: 앱 로그 localfile 미등록, 디코더 없어 필드 미추출
+    action: 로그 수집·디코더 추가
+  - id: detection_logic
+    name: 탐지 로직 (Detection Logic)
+    definition: 로그는 있으나 탐지 룰 없음
+    example: IDOR 탐지 룰 없음
+    action: 커스텀 룰 작성
+  - id: alert_suppression
+    name: 경보 억제 (Alert Suppression)
+    definition: 룰이 있었으나 오탐 때문에 억제·비활성화
+    example: 룰 level 0 처리, 무시 규칙 포함
+    action: 정밀한 룰로 재작성
+  - id: process
+    name: 프로세스 (Process)
+    definition: 경보는 발생했으나 대응하지 않음
+    example: 낮은 레벨로 아무도 미확인
+    action: 레벨 조정, 알림·절차 보완
+  - id: timeliness
+    name: 적시성 (Timeliness)
+    definition: 탐지했으나 기대 시간 내 미탐지
+    example: 일일 점검 쿼리로만 발견
+    action: 실시간 룰·자동 대응
+  - id: invalid
+    name: 검증 무효 (자체)
+    definition: 테스트용 IP 허용 등 훈련 조건으로 판단 불가
+    example: 보안그룹·와주 예외에 테스터 IP 등록
+    action: 조건 해제 후 재시험

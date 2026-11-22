@@ -1,0 +1,19 @@
+.venv/
+__pycache__/
+*.egg-info/
+.env
+.pytest_cache/
+# 실제 프로젝트 데이터는 저장소에 올리지 않음
+projects/*
+!projects/.gitkeep
+# 시연 데이터는 make_demo.py로 다시 만듦
+samples/demo/
+~$*.docx
+# 백업 폴더(backup_accounts_*, backup_remove_result_* 등)
+backup_accounts_*/
+backup_*/
+# 비밀 값: .env 변형은 제외하고 예시만 올림
+.env.*
+!.env.example
+.DS_Store
+*.orig
