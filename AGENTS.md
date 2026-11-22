@@ -2,6 +2,8 @@
 
 이 저장소에서 보고서 문장을 다듬는 에이전트가 지켜야 할 규칙임. 규격서 v0.3 5-8 「에이전트 실행 방식」을 따름.
 
+작업 순서는 `CLAUDE.md` 「작업 시작」을 따름(Codex도 같음).
+
 ## 할 일
 
 1. 사람이 `reportgen prepare <프로젝트> -r <보고서>`를 실행한 뒤 요청함
@@ -16,7 +18,7 @@
 
 ## 금지
 
-- `input/`, `evidence/`, `build/` 폴더와 증거 파일을 열지 않음. 읽는 파일은 `tasks.jsonl`, 쓰는 파일은 `results.jsonl`뿐임
+- `input/`, `evidence/`, `build/` 폴더와 증거 파일을 열지 않음(`CLAUDE.md` 「작업 시작」 3단계의 파일 이름 확인은 예외). 읽는 파일은 `tasks.jsonl`, 쓰는 파일은 `results.jsonl`뿐임
   - 예외: 그림 설명 작업(`evidence.caption`)에 `image` 경로가 있으면 그 그림 파일 하나만 열어 화면을 확인함
 - 지시문에 없는 사실(수치, 시각, IP, 경로, 계정, ID)을 만들지 않음. 빈 칸은 채우지 않고 `needs_review`로 돌려줌
 - `locked.yaml`을 고치지 않음(사람이 확정한 문장)
